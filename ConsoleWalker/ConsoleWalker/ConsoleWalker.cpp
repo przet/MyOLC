@@ -212,8 +212,9 @@ int main()
 		
 
 			// "Amount" of wall + floor as a function of how far wall is from player
-			const int nCeiling = (float)(nScreenHeight / 2.0f) - float(nScreenHeight /fRayDistanceToWall);
+			// Remember (0,0) is top left: this will help in understanding below calculation
 			assert(fRayDistanceToWall > 0);
+			const int nCeiling = (float)(nScreenHeight / 2.0f) - float(nScreenHeight /fRayDistanceToWall);
 			const int nFloor = nScreenHeight - nCeiling;
 
 			// Wall shading as function of distance to wall
