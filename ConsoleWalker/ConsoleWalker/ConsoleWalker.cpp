@@ -8,6 +8,8 @@
 #include <chrono>
 #include "ConsoleWalker_HelperFunctions.h"
 #include <iostream>
+#include <assert.h>
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 // Note to reader: Geometry. Recall (0,0) is top left: -> +ve x, v is +ve y
@@ -32,6 +34,10 @@ float fPlayerLookAngle = 0.0f;
 
 const int nMapHeight = 16;
 const int nMapWidth = 16;
+int playerPosInGameMap(int playerPosX = fPlayerPosX, int playerPosY = fPlayerPosY, int gameMapWidth = nMapWidth)
+{
+	return int(playerPosX) + (int)playerPosY * gameMapWidth;
+}
 
 // Used as a stop condition so we never run into problem of never hitting a wall when raycasting
 const float fMaxDepth = 16.0f;
@@ -41,6 +47,9 @@ float fFOV = 3.14159 / 4.0;
 
 int main()
 {
+	assert(fPlayerPosX <= nMapWidth && fPlayerPosX >= 0);
+	assert(fPlayerPosY <= nMapHeight && fPlayerPosY >= 0);
+
 	// Error Code variable
 	DWORD Error;
 
@@ -56,24 +65,28 @@ int main()
 
 	DWORD BytesWritten = 0;
 
-	std::wstring map;
+	std::wstring gameMap;
 
-	map += L"################";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#....#.....#...#";
-	map += L"#....#.....#...#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#........#.....#";
-	map += L"#........#.....#";
-	map += L"#........#.....#";
-	map += L"#######..#######"; 
+	gameMap += L"#######..#######";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#....#.....#...#";
+	gameMap += L"#....#.....#...#";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#..............#";
+	gameMap += L"#........#.....#";
+	gameMap += L"#........#.....#";
+	gameMap += L"#........#.....#";
+	gameMap += L"#######..#######"; 
+	
+	unsigned const gameMapSize = gameMap.size();
+	assert(gameMap.size() == nMapHeight * nMapWidth); // _don't_ use defined variable for size in the assert
+
 
 	// For consistent player movement/framerate
 	auto tp1 = std::chrono::system_clock::now();
@@ -97,22 +110,34 @@ int main()
 			{ "right", 'D' }
 		};
 
-		// Rotation
+		//---Rotation---
 		// TODO see OLC synthysiser video
 		if (GetAsyncKeyState((unsigned short)mControls["left"]) & 0x8000)
+		{
 			fPlayerLookAngle -= (0.8f) * fElapsedTime;
+		}
 
 		if (GetAsyncKeyState((unsigned short)mControls["right"]) & 0x8000)
+		{
 			fPlayerLookAngle += (0.8f) * fElapsedTime;
+		}
 
-		// Forward/Back
+		//---Forward/Back---
 		if (GetAsyncKeyState((unsigned short)mControls["up"]) & 0x8000)
 		{
 			fPlayerPosX += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 			fPlayerPosY += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 
+			// Out Of Bounds Handling
+			if (playerPosInGameMap()  > gameMap.size()
+				|| playerPosInGameMap() < 0)
+			{
+				fPlayerPosX -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+				fPlayerPosY -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+			}
+
 			// Collision Detection
-			if (map[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
+			if (gameMap[playerPosInGameMap()] == '#')
 			{
 				fPlayerPosX -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 				fPlayerPosY -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
@@ -124,8 +149,16 @@ int main()
 			fPlayerPosX -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 			fPlayerPosY -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 
+			// Out Of Bounds Handling
+			if (playerPosInGameMap()  > gameMap.size()
+				|| playerPosInGameMap() < 0)
+			{
+				fPlayerPosX += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+				fPlayerPosY += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+			}
+
 			// Collision Detection
-			if (map[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
+			if (gameMap[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
 			{
 				fPlayerPosX += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 				fPlayerPosY += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
@@ -138,16 +171,11 @@ int main()
 		// Raycasting algorithm
 		for (int X = 0; X < nScreenWidth; X++)
 		{
-			// For each column calculate the projected ray angle into world space
-			// Note we do not need to check for nScreenWidth zero - we will never get here (loop condition) if it is - 
-			// although I guess someone could put in negative... anyway.
-			// TODO: the first term implies the angle is measured clockwise from a horizontal (the horiztonal line extending from the 
-			// players point): what if anti-clockwise?
 			float fRayAngle = (fPlayerLookAngle - fFOV / 2.0f) + ((float)X/ (float)nScreenWidth) * fFOV;
 
 			float fRayDistanceToWall = 0;
 			bool bRayHitWall = false;
-			// Don't _need_ ExceededMap flag, but I think it makes the logic easier to follow - seperating wall/map
+			// Don't _need_ ExceededMap flag, but I think it makes the logic easier to follow - seperating wall/gameMap
 			bool bRayExceededMap = false;
 			const float fIncrement = 0.1f;
 
@@ -166,16 +194,15 @@ int main()
 				int nTestY = (int)(fPlayerPosY + fEyeY * fRayDistanceToWall);
 
 				// TODO: do we need to check of TestX, TestY < 0 ? Will they ever be? Yes they could be...
-				if (nTestX < 0 || nTestX >= nMapWidth || nTestY < 0 || nTestY >= nMapHeight) // we have exceeded the map limits 
+				if (nTestX < 0 || nTestX >= nMapWidth || nTestY < 0 || nTestY >= nMapHeight) // we have exceeded the gameMap limits 
 				{
 					bRayExceededMap = true;
 					fRayDistanceToWall = fMaxDepth;
 				}
-				else // we are within map boundary
+				else // we are within gameMap boundary
 				{
-					// !TODO : could be related to my previous !TODO re: cos/sin. I * by nMapHeight, OLC by nMapWidth
-					// TestY < nMapHeight here (that's how we got here) so TestY * nMapHeight is the fraction of the nMapHeight
-					if (map[nTestY * nMapHeight + nTestX] == '#')
+					// One mapwidth represents 1 unit of height (if you look at the gameMap as a string on one line, this helps)
+					if (gameMap[nTestY * nMapWidth + nTestX] == '#')
 					{
 						bRayHitWall = true;
 					}
@@ -187,6 +214,8 @@ int main()
 			// "Amount" of wall + floor as a function of how far wall is from player
 			// TODO : internalise this concept/calculation - the physics of it
 			const int nCeiling = (float)(nScreenHeight / 2.0f) - nScreenHeight / (float)fRayDistanceToWall;
+			assert(fRayDistanceToWall > 0);
+			const int nCeiling = (float)(nScreenHeight / 2.0f) - float(nScreenHeight /fRayDistanceToWall);
 			const int nFloor = nScreenHeight - nCeiling;
 
 			// Wall shading as function of distance to wall
@@ -213,9 +242,13 @@ int main()
 					// multiply by screenwidth we want the whole width to be coverred by the appropriate char
 					// TODO: for experimentation, add command line args to set the ascii code  
 					// TODO: multiply by ScreenHeight to see what happens!
+				{
 					Screen[y * nScreenWidth + X] = 0x20;
+				}
 				else if (y <= nFloor) // wall
+				{
 					Screen[y * nScreenWidth + X] = nShade;
+				}
 				else
 				{
 					// Shade floor based on distance
