@@ -172,17 +172,29 @@ int main()
 		{
 			fPlayerPosX += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 			fPlayerPosY -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+
+			// Collision Detection
+			if (gameMap[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
+			{
+				fPlayerPosX -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+				fPlayerPosY += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+			}
 		}
 
 		if (GetAsyncKeyState((unsigned short)mControls["left_strafe"]) & 0x8000)
 		{
 			fPlayerPosX -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 			fPlayerPosY += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+
+			// Collision Detection
+			if (gameMap[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
+			{
+				fPlayerPosX += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+				fPlayerPosY -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+			}
 		}
 
 		//----end controls
-
-
 
 		// Raycasting algorithm
 		for (int X = 0; X < nScreenWidth; X++)
