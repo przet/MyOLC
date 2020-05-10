@@ -173,6 +173,14 @@ int main()
 			fPlayerPosX += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 			fPlayerPosY -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 
+			// Out Of Bounds Handling
+			if (playerPosInGameMap()  > gameMap.size()
+				|| playerPosInGameMap() < 0)
+			{
+				fPlayerPosX -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+				fPlayerPosY += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+			}
+
 			// Collision Detection
 			if (gameMap[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
 			{
@@ -185,6 +193,14 @@ int main()
 		{
 			fPlayerPosX -= cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
 			fPlayerPosY += sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+
+			// Out Of Bounds Handling
+			if (playerPosInGameMap()  > gameMap.size()
+				|| playerPosInGameMap() < 0)
+			{
+				fPlayerPosX += cosf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+				fPlayerPosY -= sinf(fPlayerLookAngle) * 5.0f * fElapsedTime;
+			}
 
 			// Collision Detection
 			if (gameMap[(int)fPlayerPosY * nMapWidth + (int)fPlayerPosX] == '#')
