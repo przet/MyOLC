@@ -95,10 +95,6 @@ int main()
 	// As with any game engine - need a game loop:
 	while (1)
 	{
-
-
-
-
 		// For consistent player movement/framerate
 		tp2 = std::chrono::system_clock::now();
 		std::chrono::duration<float> elapsedTime = tp2 - tp1;
