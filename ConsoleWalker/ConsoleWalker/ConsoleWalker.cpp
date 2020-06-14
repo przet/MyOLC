@@ -266,24 +266,11 @@ int main()
 										 angleBetweenRayVectors(mUnitRayVector, mCornerToPlayerRay)});
 						}
 						
-						
 						// Sort on player distance to corner
 						std::sort(std::begin(p), std::end(p));
-						
-
-
-                        //float vy = (float)nTestY + 0 - fPlayerPosY;
-                        //float vx = ;
-                        //float playerDistanceToCorner = sqrt(pow(vx, 2) + pow(vy, 2));
-                        //float dotProduct = (fEyeX * vx / playerDistanceToCorner) + (fEyeY * vy / playerDistanceToCorner);
-                        //p.push_back({ playerDistanceToCorner, dotProduct });
 
 						float fTolerance = 0.01;
-						//assert(!(acos(p[0].second) < fTolerance && acos(p[1].second) < fTolerance));
-						if (p[0].second < fTolerance || p[1].second < fTolerance)
-						{
-							bBoundary = true;
-						}
+						bBoundary = p[0].second < fTolerance || p[1].second < fTolerance;
 					}
 				}
 			}
