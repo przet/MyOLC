@@ -253,7 +253,7 @@ int main()
 						
 						for (const auto& corner : mCell.mCornerList)
 						{
-							RayVector mCornerToPlayerRay(corner - mPlayerPos);
+							RayVector mCornerToPlayerRay(corner, mPlayerPos);
 							p.push_back({ playerDistance(mPlayerPos, corner) ,
 										 angleBetweenRayVectors(mUnitRayVector, mCornerToPlayerRay)});
 						}
