@@ -10,6 +10,9 @@
 #include <iostream>
 #include <assert.h>
 #include <algorithm>
+#include <vector>
+#include <utility>
+#include <cmath>
 
 //-----------------------------------------------------------------------------
 // Note to reader: Geometry. Recall (0,0) is top left: -> +ve x, v is +ve y
@@ -97,6 +100,8 @@ int main()
 
 			float fRayDistanceToWall = 0;
 			bool bRayHitWall = false;
+			bool bBoundary = false;
+
 			// Don't _need_ ExceededMap flag, but I think it makes the logic easier to follow - seperating wall/gameMap
 			bool bRayExceededMap = false;
 			const float fIncrement = 0.1f;
@@ -127,8 +132,43 @@ int main()
 					if (gameMap[nTestY * nMapWidth + nTestX] == '#')
 					{
 						bRayHitWall = true;
-					}
+						
+						// (Player distance to corner, dot product ray cast to corner
+						// and ray cast from corner.
+						std::vector<std::pair<float, float>> p;
 
+						for (int tx = 0; tx < 2; ++tx)
+						{
+							for (int ty = 0; ty < 2; ++ty)
+							{
+								// Ray has hit a wall: so + 0 , +1 for corners.
+								// Offset player pos.
+								float vy = (float)nTestY + ty - fPlayerPosY;
+								float vx = (float)nTestX + tx - fPlayerPosX;
+								float playerDistanceToCorner = sqrt(pow(vx, 2) + pow(vy, 2));
+								float dotProduct = (fEyeX * vx / playerDistanceToCorner) + (fEyeY * vy / playerDistanceToCorner);
+								p.push_back({ playerDistanceToCorner, dotProduct });
+							}
+						}
+						assert(p.size() == 4);
+
+						// Sort on player distance to corner
+						std::sort(std::begin(p), std::end(p),
+								  [](const std::pair<float, float>& p1,
+									 const std::pair<float, float>& p2)
+									 {return p1.first < p2.first; });
+
+						float fTolerance = 0.01;
+						if (acos(p[0].second) < fTolerance)
+						{
+							bBoundary = true;
+						}
+
+						if (acos(p[1].second) < fTolerance)
+						{
+							bBoundary = true;
+						}
+					}
 				}
 			}
 		
@@ -156,6 +196,9 @@ int main()
 			else if (fRayDistanceToWall < fMaxDepth / 3.0f)	nShade = mM["Dark shade block"];
 			else if (fRayDistanceToWall < fMaxDepth / 2.0f)	nShade = mM["Medium shade block"];
 			else if (fRayDistanceToWall < fMaxDepth )	nShade = mM["Light shade block"];
+
+			// Shade cell edges
+			if (bBoundary) nShade = ' ';
 
 			for (int y = 0; y < nScreenHeight; y++)
 			{
