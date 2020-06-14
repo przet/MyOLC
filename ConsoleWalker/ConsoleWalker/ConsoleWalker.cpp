@@ -133,7 +133,7 @@ int main()
 					{
 						bRayHitWall = true;
 						
-						// (Player distance to corner, dot product ray cast to corner
+						// (Player distance to corner, angle between ray cast 
 						// and ray cast from corner.
 						std::vector<std::pair<float, float>> p;
 
@@ -146,8 +146,8 @@ int main()
 								float vy = (float)nTestY + ty - fPlayerPosY;
 								float vx = (float)nTestX + tx - fPlayerPosX;
 								float playerDistanceToCorner = sqrt(pow(vx, 2) + pow(vy, 2));
-								float dotProduct = (fEyeX * vx / playerDistanceToCorner) + (fEyeY * vy / playerDistanceToCorner);
-								p.push_back({ playerDistanceToCorner, dotProduct });
+								float angle = acos( (fEyeX * vx / playerDistanceToCorner) + (fEyeY * vy / playerDistanceToCorner) );
+								p.push_back({ playerDistanceToCorner, angle });
 							}
 						}
 						assert(p.size() == 4);
@@ -156,8 +156,7 @@ int main()
 						std::sort(std::begin(p), std::end(p));
 
 						float fTolerance = 0.01;
-						assert(!(acos(p[0].second) < fTolerance && acos(p[1].second) < fTolerance));
-						if (acos(p[0].second) < fTolerance || acos(p[1].second) < fTolerance)
+						if (p[0].second < fTolerance || p[1].second < fTolerance)
 						{
 							bBoundary = true;
 						}
