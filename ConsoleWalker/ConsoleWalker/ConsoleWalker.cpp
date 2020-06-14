@@ -52,15 +52,12 @@ struct Cell
     corner0		    corner3
 	*/
 
-	Cell(Coordinate rCorner0,
-		Coordinate rCorner1,
-		Coordinate rCorner2,
-		Coordinate rCorner3)
-		: mCorner0(rCorner0),
-		mCorner1(rCorner1),
-		mCorner2(rCorner2),
-		mCorner3(rCorner3)
+	Cell(Coordinate rCorner0)
+		: mCorner0(rCorner0)
 	{
+		mCorner1 = { rCorner0.first + 1, rCorner0.second };
+		mCorner2 = { rCorner0.first + 1, rCorner0.second + 1 };
+		mCorner3 = { rCorner0.first, rCorner0.second + 1 };
 		mCornerList = {mCorner0,
 					   mCorner1,
 					   mCorner2,
@@ -246,13 +243,8 @@ int main()
 					{
 						bRayHitWall = true;
 						
-                        // Ray has hit a wall: so + 0 , +1 for corners.
-						Coordinate mCorner0{ (float)nTestX + 0, (float)nTestY + 0 };
-						Coordinate mCorner1{ (float)nTestX + 1, (float)nTestY + 0 };
-						Coordinate mCorner2{ (float)nTestX + 1, (float)nTestY + 1 };
-						Coordinate mCorner3{ (float)nTestX + 0, (float)nTestY + 1 };
-
-						Cell mCell{ mCorner0, mCorner1, mCorner2, mCorner3 };
+                        // Ray has hit a wall: so first corner is at (nTestX, nTestY)
+						Cell mCell({ (float)nTestX, (float)nTestY});
 
 						// (Player distance to corner, dot product ray cast to corner
 						// and ray cast from corner.
