@@ -13,6 +13,7 @@
 #include <vector>
 #include <utility>
 #include <cmath>
+#include <initializer_list>
 
 //-----------------------------------------------------------------------------
 // Note to reader: Geometry. Recall (0,0) is top left: -> +ve x, v is +ve y
@@ -34,6 +35,112 @@ const float fMaxDepth = 16.0f;
 
 // Pi/4 : 45 deg
 float fFOV = 3.14159 / 4.0;
+
+typedef std::pair<float, float> Coordinate;
+
+struct Cell
+{
+	/*
+	corner1          corner2
+    (x2,y0)			(x2,y1)
+    -------------------
+    |				  |	
+	|			      |		
+	|                 |
+	-------------------
+    (x1,y0)			(x1,y1)
+    corner0		    corner3
+	*/
+
+	Cell(Coordinate rCorner0,
+		Coordinate rCorner1,
+		Coordinate rCorner2,
+		Coordinate rCorner3)
+		: mCorner0(rCorner0),
+		mCorner1(rCorner1),
+		mCorner2(rCorner2),
+		mCorner3(rCorner3)
+	{
+		mCornerList = {mCorner0,
+					   mCorner1,
+					   mCorner2,
+					   mCorner3};
+	}
+
+	Cell(std::initializer_list<Coordinate> rInitList)
+	{
+		for (const auto& elem : rInitList)
+		{
+			mCornerList.push_back(elem);
+		}
+	}
+
+	Coordinate mCorner0;
+	Coordinate mCorner1;
+	Coordinate mCorner2;
+	Coordinate mCorner3;
+	std::vector<Coordinate> mCornerList;
+
+};
+
+template <typename T, typename U>
+std::pair<T, U> operator-(const std::pair<T, U>& rCoord1, const std::pair<T, U>& rCoord2)
+{
+	// Only works for Types with - defined on them
+	return { rCoord1.first - rCoord2.first, rCoord1.second - rCoord2.second };
+}
+
+struct RayVector
+{
+	// TODO static assert to make sure we 
+	// don't end up with zero length
+	RayVector(const Coordinate& rEndCoord, const Coordinate& rStartCoord)
+	{
+		xLen = (rEndCoord - rStartCoord).first;
+		yLen = (rEndCoord - rStartCoord).second;
+		Len = sqrt(pow(xLen, 2) + pow(yLen, 2));
+		unitXLen = xLen / Len;
+		unitYLen = yLen / Len;
+	}
+
+	RayVector(const float& rX, const float& rY)
+	{
+		xLen = rX;
+		yLen = rY;
+		Len = sqrt(pow(xLen, 2) + pow(yLen, 2));
+		unitXLen = xLen / Len;
+		unitYLen = yLen / Len;
+	}
+
+	RayVector(const Coordinate& rCoord)
+	{
+		xLen = rCoord.first;
+		yLen = rCoord.second;
+		Len = sqrt(pow(xLen, 2) + pow(yLen, 2));
+		unitXLen = xLen / Len;
+		unitYLen = yLen / Len;
+	}
+
+
+	float xLen;
+	float yLen;
+	float Len;
+	float unitXLen;
+	float unitYLen;
+};
+
+
+float playerDistance(const Coordinate& rPlayerPos, const Coordinate& rDestination)
+{
+	return sqrt(pow(rPlayerPos.first - rDestination.first, 2)
+				+ pow(rPlayerPos.second - rDestination.second, 2));
+}
+
+float angleBetweenRayVectors(const RayVector& rRayVector1, const RayVector& rRayVector2)
+{
+    return acos( (rRayVector1.unitXLen * rRayVector2.unitXLen) + (rRayVector1.unitYLen * rRayVector2.unitYLen) );
+}
+
 
 int main()
 {
@@ -109,6 +216,12 @@ int main()
 			// Unit vector for Ray
 			float fEyeX = sinf(fRayAngle);
 			float fEyeY = cosf(fRayAngle);
+			RayVector mUnitRayVector(fEyeX, fEyeY);
+
+			double mDoubleEqualTolerance = 0.00001;
+			assert(mUnitRayVector.unitXLen < fEyeX + mDoubleEqualTolerance && mUnitRayVector.unitYLen < fEyeY + mDoubleEqualTolerance &&
+				   mUnitRayVector.unitXLen > fEyeX - mDoubleEqualTolerance && mUnitRayVector.unitYLen > fEyeY - mDoubleEqualTolerance);
+
 
 			while (!bRayHitWall && fRayDistanceToWall < fMaxDepth && !bRayExceededMap)
 			{
@@ -133,29 +246,40 @@ int main()
 					{
 						bRayHitWall = true;
 						
-						// (Player distance to corner, angle between ray cast 
+                        // Ray has hit a wall: so + 0 , +1 for corners.
+						Coordinate mCorner0{ (float)nTestX + 0, (float)nTestY + 0 };
+						Coordinate mCorner1{ (float)nTestX + 1, (float)nTestY + 0 };
+						Coordinate mCorner2{ (float)nTestX + 1, (float)nTestY + 1 };
+						Coordinate mCorner3{ (float)nTestX + 0, (float)nTestY + 1 };
+
+						Cell mCell{ mCorner0, mCorner1, mCorner2, mCorner3 };
+
+						// (Player distance to corner, dot product ray cast to corner
 						// and ray cast from corner.
 						std::vector<std::pair<float, float>> p;
-
-						for (int tx = 0; tx < 2; ++tx)
+						Coordinate mPlayerPos{ fPlayerPosX, fPlayerPosY };
+						
+						for (const auto& corner : mCell.mCornerList)
 						{
-							for (int ty = 0; ty < 2; ++ty)
-							{
-								// Ray has hit a wall: so + 0 , +1 for corners.
-								// Offset player pos.
-								float vy = (float)nTestY + ty - fPlayerPosY;
-								float vx = (float)nTestX + tx - fPlayerPosX;
-								float playerDistanceToCorner = sqrt(pow(vx, 2) + pow(vy, 2));
-								float angle = acos( (fEyeX * vx / playerDistanceToCorner) + (fEyeY * vy / playerDistanceToCorner) );
-								p.push_back({ playerDistanceToCorner, angle });
-							}
+							RayVector mCornerToPlayerRay(corner - mPlayerPos);
+							p.push_back({ playerDistance(mPlayerPos, corner) ,
+										 angleBetweenRayVectors(mUnitRayVector, mCornerToPlayerRay)});
 						}
-						assert(p.size() == 4);
-
+						
+						
 						// Sort on player distance to corner
 						std::sort(std::begin(p), std::end(p));
+						
+
+
+                        //float vy = (float)nTestY + 0 - fPlayerPosY;
+                        //float vx = ;
+                        //float playerDistanceToCorner = sqrt(pow(vx, 2) + pow(vy, 2));
+                        //float dotProduct = (fEyeX * vx / playerDistanceToCorner) + (fEyeY * vy / playerDistanceToCorner);
+                        //p.push_back({ playerDistanceToCorner, dotProduct });
 
 						float fTolerance = 0.01;
+						//assert(!(acos(p[0].second) < fTolerance && acos(p[1].second) < fTolerance));
 						if (p[0].second < fTolerance || p[1].second < fTolerance)
 						{
 							bBoundary = true;
