@@ -153,10 +153,7 @@ int main()
 						assert(p.size() == 4);
 
 						// Sort on player distance to corner
-						std::sort(std::begin(p), std::end(p),
-								  [](const std::pair<float, float>& p1,
-									 const std::pair<float, float>& p2)
-									 {return p1.first < p2.first; });
+						std::sort(std::begin(p), std::end(p));
 
 						float fTolerance = 0.01;
 						assert(!(acos(p[0].second) < fTolerance && acos(p[1].second) < fTolerance));
