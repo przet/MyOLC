@@ -159,12 +159,8 @@ int main()
 									 {return p1.first < p2.first; });
 
 						float fTolerance = 0.01;
-						if (acos(p[0].second) < fTolerance)
-						{
-							bBoundary = true;
-						}
-
-						if (acos(p[1].second) < fTolerance)
+						assert(!(acos(p[0].second) < fTolerance && acos(p[1].second) < fTolerance));
+						if (acos(p[0].second) < fTolerance || acos(p[1].second) < fTolerance)
 						{
 							bBoundary = true;
 						}
