@@ -326,29 +326,10 @@ int main()
 		Screen[nCharacterArraySize - 1] = '\0';
 
 		//---Screen Output---
-		std::string playerPosXStr = std::to_string(fPlayerPosX);
-		std::string playerPosXStrTitle = "Player Position X = ";
-		std::string playerPosYStr = std::to_string(fPlayerPosY);
-		std::string playerPosYStrTitle = "Player Position Y = ";
-		std::string playerPosLookAngleStr = std::to_string(fPlayerLookAngle);
-		std::string playerLookAngleStrTitle = "Player Look Angle = ";
+		swprintf_s(Screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f, FPS=%3.2f", fPlayerPosX, fPlayerPosY, fPlayerLookAngle, 1.0f / fElapsedTime);
 
-		// Write to screen
-		// XPos
-		assert(playerPosXStr.length() + playerPosXStrTitle.length() < nScreenWidth);
-		int i = 0;
-		for (char character : playerPosXStrTitle) { Screen[i++] = character;}
-		for (char character : playerPosXStr) { Screen[i++] = character;}
-		// YPos
-		assert(playerPosYStr.length() + playerPosYStrTitle.length() < nScreenWidth);
-		i = nScreenWidth;
-		for (char character : playerPosYStrTitle) { Screen[i++] = character;}
-		for (char character : playerPosYStr) { Screen[i++] = character;}
-		// Look Angle
-		assert(playerPosYStr.length() + playerPosYStrTitle.length() < nScreenWidth);
-		i = nScreenWidth*2;
-		for (char character : playerLookAngleStrTitle) { Screen[i++] = character;}
-		for (char character : playerPosLookAngleStr) { Screen[i++] = character;}
+
+		//-----------------
 
 		// Origin is top-left-hand corner - will stop console from scrolling down
         if (!WriteConsoleOutputCharacter(ConsoleHandle, Screen, nCharacterArraySize, { 0, 0 }, &BytesWritten))
