@@ -327,7 +327,14 @@ int main()
 
 		//---Screen Output---
 		// Stats
-		swprintf_s(Screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f, FPS=%3.2f", fPlayerPosX, fPlayerPosY, fPlayerLookAngle, 1.0f / fElapsedTime);
+		float vPi = 3.14159265359;
+		float vCurrentLookAngle = fmod((fPlayerLookAngle * 180 / vPi), 360);
+		if (vCurrentLookAngle < 0)
+		{
+			vCurrentLookAngle += 360;
+		}
+
+		swprintf_s(Screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f, FPS=%3.2f", fPlayerPosX, fPlayerPosY , vCurrentLookAngle , 1.0f / fElapsedTime);
 
 		// Map
 		for (int x = 0; x < nMapHeight; ++x)
