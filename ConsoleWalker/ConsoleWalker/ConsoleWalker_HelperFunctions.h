@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <cmath>
 #define StringLiteral const char*
 #define Flt float
 #define Map_Str_To_Char std::map<StringLiteral, char>
@@ -143,4 +144,17 @@ void movePlayer(const std::wstring& gameMap,
 	}
 
 }
+
+bool floatEqual(float r1, float r2, float rDelta = 10e-10)
+{
+	return fabs(r1 - r2) <= rDelta;
+}
+
+bool angleInSector(const float& rAngle, float rSectorStart, float rSectorEnd, bool rIncludeBoundaries = false)
+{
+	return rIncludeBoundaries ? rAngle <= rSectorEnd && rAngle >= rSectorStart :
+                                rAngle < rSectorEnd && rAngle > rSectorStart ;
+
+}
+
 

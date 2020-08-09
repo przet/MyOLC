@@ -347,7 +347,56 @@ int main()
 
 		// Player position in map.
 		// Draw on top of game map.
-		Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = 'P';
+		
+		// Extended ascii unicode values for different positions.
+		// Using compass bearings, north pointing to top of screen
+		char vNorth = '^';
+		char vSouth = 'v';
+		char vEast = '>';
+		char vWest = '<';
+		short int vNorthEast = 0x2510;
+		short int vSouthEast = 0x2518;
+		short int vSouthWest = 0x2514;
+		short int vNorthWest = 0x250C;
+
+		// Using vCurrentLookAngle. Due to the conversions we do
+		// to fPlayerLookAngle, these two angles will not quite be the same.
+		// However we want the drawn characted to be consisetent with what is shown 
+		// on the screen, which is in degrees
+		
+		if (floatEqual(vCurrentLookAngle,0,2))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vNorth;
+		}
+		else if (floatEqual(vCurrentLookAngle,180,2))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vSouth;
+		}
+		else if (floatEqual(vCurrentLookAngle,90,2))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vEast;
+		}
+		else if (floatEqual(vCurrentLookAngle,270,2))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vWest;
+		}
+		else if(angleInSector(vCurrentLookAngle, 0, 90))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vNorthEast;
+		}
+		else if(angleInSector(vCurrentLookAngle, 90, 180))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vSouthEast;
+		}
+		else if(angleInSector(vCurrentLookAngle, 180, 270))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vSouthWest;
+		}
+		else if(angleInSector(vCurrentLookAngle, 270, 360))
+		{
+            Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = vNorthWest;
+		}
+
 		//-----------------
 
 		// Origin is top-left-hand corner - will stop console from scrolling down
