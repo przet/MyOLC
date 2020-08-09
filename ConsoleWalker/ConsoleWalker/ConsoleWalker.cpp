@@ -326,7 +326,18 @@ int main()
 		Screen[nCharacterArraySize - 1] = '\0';
 
 		//---Screen Output---
+		// Stats
 		swprintf_s(Screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f, FPS=%3.2f", fPlayerPosX, fPlayerPosY, fPlayerLookAngle, 1.0f / fElapsedTime);
+
+		// Map
+		for (int x = 0; x < nMapHeight; ++x)
+		{
+			for (int y = 0; y < nMapWidth; ++y)
+			{
+				Screen[(y + 1) * nScreenWidth + x] = gameMap[y * nMapWidth + x];
+			}
+		}
+
 
 
 		//-----------------
