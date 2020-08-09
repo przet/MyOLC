@@ -338,8 +338,9 @@ int main()
 			}
 		}
 
-
-
+		// Player position in map.
+		// Draw on top of game map.
+		Screen[((int)fPlayerPosY + 1) * nScreenWidth + (int)fPlayerPosX] = 'P';
 		//-----------------
 
 		// Origin is top-left-hand corner - will stop console from scrolling down
