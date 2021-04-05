@@ -10,3 +10,8 @@
 *.lastbuildstate
 *.exe
 *.ilk
+*.recipe
+*.iobj
+*.ipdb
+*.db-shm
+*.db-wal
