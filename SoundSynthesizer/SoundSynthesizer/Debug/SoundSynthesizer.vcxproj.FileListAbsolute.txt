@@ -1,0 +1,2 @@
+N:\Programming\OneLoneCoder\SoundSynthesizer\SoundSynthesizer\Debug\SoundSynthesizer.exe
+N:\Programming\OneLoneCoder\SoundSynthesizer\SoundSynthesizer\Debug\SoundSynthesizer.pdb
